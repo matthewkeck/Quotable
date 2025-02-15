@@ -174,3 +174,11 @@ body {
   /* Scale down a bit when clicked */
   transform: scale(0.95);
 }
+
+.string-box.correct {
+  border: 4px solid limegreen;
+}
+
+.string-box.incorrect {
+  border: 4px solid red;
+}

@@ -93,7 +93,6 @@ app.get("/quotes", (req, res) => {
   let quoteAuthor2 = selectedQuote2.quoteAuthor || "Unknown";
 
   const tiles = generateTilesForQuotes(cleanedQuote1, cleanedQuote2, dateSeed);
-  // console.log(tiles)
   res.json({
     quote1: cleanedQuote1,
     author1: quoteAuthor1,
