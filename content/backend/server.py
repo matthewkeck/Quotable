@@ -1,9 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import json, math, re
+import math, re, random, os
+import boto3
 from datetime import datetime
-import random
-
 
 app = Flask(__name__)
 CORS(app)
@@ -11,18 +10,30 @@ CORS(app)
 # Global dictionary to store the puzzle data for validation.
 puzzle_data = {}
 
+# DynamoDB setup
+DYNAMODB_ENDPOINT = os.getenv("DYNAMODB_ENDPOINT", None)  # Use local or AWS
+TABLE_NAME = os.getenv("QUOTES_TABLE", "QuotesTable")
+
+dynamodb = boto3.resource("dynamodb", endpoint_url=DYNAMODB_ENDPOINT) if DYNAMODB_ENDPOINT else boto3.resource("dynamodb")
+table = dynamodb.Table(TABLE_NAME)
+
 def clean_text(text):
+    """Normalize text by removing punctuation and converting to lowercase."""
     return re.sub(r'[^\w\s]', '', text.lower())
 
 def seeded_random(seed):
+    """Generate a seeded random float for reproducibility."""
     x = math.sin(seed) * 10000
     return x - math.floor(x)
 
 def get_quotes():
-    with open("filtered_quotes.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+    """Fetch all quotes from DynamoDB."""
+    response = table.scan()
+    return response.get('Items', [])
 
 def generate_tiles_for_quotes(quote1, quote2, seed):
+    print(quote1)
+    """Break quotes into tiles for the puzzle."""
     words1 = quote1.split()
     words2 = quote2.split()
 
@@ -54,7 +65,11 @@ def generate_tiles_for_quotes(quote1, quote2, seed):
 
 @app.route('/tiles', methods=['GET'])
 def tiles_endpoint():
+    """Fetches two quotes and generates a tile puzzle."""
     quotes_data = get_quotes()
+    if len(quotes_data) < 2:
+        return jsonify({"error": "Not enough quotes available"}), 500
+
     date_seed = int(datetime.today().strftime("%Y%m%d"))
     num_quotes = len(quotes_data)
 
@@ -71,7 +86,7 @@ def tiles_endpoint():
     quote_author1 = selected_quote1.get("quoteAuthor", "Unknown")
     quote_author2 = selected_quote2.get("quoteAuthor", "Unknown")
 
-    # Store correct answers along with authors for later validation.
+    # Store correct answers along with authors for validation.
     puzzle_data["quote1"] = cleaned_quote1
     puzzle_data["quote2"] = cleaned_quote2
     puzzle_data["author1"] = quote_author1
@@ -82,6 +97,7 @@ def tiles_endpoint():
 
 @app.route('/validate', methods=['POST'])
 def validate():
+    """Validates the user's answer against the correct quote."""
     data = request.get_json()
     user_top = data.get("topString", "").strip()
     user_bottom = data.get("bottomString", "").strip()
@@ -93,7 +109,6 @@ def validate():
 
     if ((user_top == correct_quote1 or user_top == correct_quote2) and
         (user_bottom == correct_quote1 or user_bottom == correct_quote2)):
-        # Append the proper author to each completed quote.
         completed_top = user_top + " - " + (author1 if user_top == correct_quote1 else author2)
         completed_bottom = user_bottom + " - " + (author1 if user_bottom == correct_quote1 else author2)
         return jsonify({
