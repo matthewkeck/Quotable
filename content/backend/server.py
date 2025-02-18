@@ -3,6 +3,7 @@ from flask_cors import CORS
 import json, math, re
 from datetime import datetime
 import random
+
 app = Flask(__name__)
 CORS(app)
 # Global dictionary to store the puzzle data for validation.

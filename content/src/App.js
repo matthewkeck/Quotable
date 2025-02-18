@@ -19,7 +19,7 @@ function App() {
   useEffect(() => {
     const fetchTiles = async () => {
       try {
-        const response = await fetch(API_URL + '/tiles');
+        const response = await fetch(API_URL + 'tiles');
         const data = await response.json();
         
         setTiles(data.tiles || []);
@@ -115,7 +115,7 @@ function App() {
     try {
       if (validationStatus === "correct") {return;}
 
-      const response = await fetch(API_URL + '/validate', {
+      const response = await fetch(API_URL + 'validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

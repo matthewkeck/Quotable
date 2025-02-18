@@ -1,1 +1,1 @@
-export const API_URL = 'https://k242ts323rdjolbuqbra3td3o40dahhd.lambda-url.us-east-1.on.aws/';
+export const API_URL = 'https://o11ny20zld.execute-api.us-east-1.amazonaws.com/dev';
