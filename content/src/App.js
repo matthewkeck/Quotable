@@ -99,7 +99,7 @@ function App() {
         const {version: newVersion} = await res.json();
         const oldVersion = localStorage.getItem('quoteVersionSeed');
 
-        if (oldVersion && oldVersion !== newVersion.toString()) {
+        if (oldVersion && oldVersion !== newVersion) {
           localStorage.clear();
           localStorage.setItem('quoteVersionSeed', newVersion);
           fetchTiles();
