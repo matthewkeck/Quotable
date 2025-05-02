@@ -1,184 +1,260 @@
+/* Updated App.css with stacked buttons, black text, blue borders, white game container */
+:root {
+  /* Page backgrounds */
+  --bg-light:    #E3F2FD;  /* light sky blue */
+  --bg-accent:   #FFEBEE;  /* pale rose */
 
+  /* Tiles */
+  --tile-bg:     #FFFFFF;  /* white */
+  --tile-border: #42A5F5;  /* vivid blue */
+
+  /* Buttons & accents */
+  --primary:     #1E88E5;  /* strong blue */
+  --secondary:   #D81B60;  /* magenta */
+  --highlight:   #43A047;  /* fresh green */
+
+  /* Text */
+  --text-main:   #000000;  /* black */
+  --text-light:  #FFFFFF;  /* white */
+}
 
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 body {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
-  margin: 0;
-  background-color: #646060;
-  color: white;
+  background-color: var(--bg-light);
+  color: var(--text-main);
+}
+
+h1 {
+  text-align: center;
+  color: var(--primary);
+  margin: 1rem;
+}
+
+.game-container,
+.results-screen {
+  margin: 2rem auto;
+  box-sizing: border-box;
+  padding: 2rem;
 }
 
 .game-container {
-  max-width: 425px;
-  text-align: center;
+  position: relative;
+  background-color: #FFFFFF;  /* white */
+  color: var(--text-main);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  /* overflow: hidden; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
 }
 
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Auto-fitting columns */
-  grid-auto-rows: minmax(150px, auto);
-  gap: 5px;
-  width: 100%; /* Fit content width instead of full width */
-  padding: 5px;
-  margin: 0 auto; /* Center the grid */
-  justify-content: center; /* Ensure centering */
+/* .tiles-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+} */
+
+/* Override react-grid-layout width */
+.tiles-wrapper .react-grid-layout {
+  width: 100% !important;
+}
+
+/* Responsive grid items: 3 columns default */
+.tiles-wrapper .react-grid-item {
+  width: calc((100% - 2 * 30px) / 3) !important; /* subtract margins */
+  margin: 15px !important;
+}
+
+/* 2 columns on mid screens */
+@media (max-width: 500px) {
+  .tiles-wrapper .react-grid-item {
+    width: calc((100% - 30px) / 2) !important;
+  }
+}
+
+/* 1 column on small screens */
+@media (max-width: 350px) {
+  .tiles-wrapper .react-grid-item {
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
 }
 
 .tile {
-  padding: 10px;
+  width: 75%;
+  position: relative;
+  user-select: none; /* Prevents text selection */
+}
+
+.flip-content.correct-order {
+  background-color: gold;
+}
+
+.flip-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+  z-index: 2;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-content {
   font-size: 12px;
-  background-color: #333;
-  color: #ffffff;
-  border-radius: 10px;
+  border: 2px solid var(--tile-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background-color: var(--tile-bg);
+  color: var(--text-main);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 10px;
   position: relative;
-  cursor: pointer;
   text-align: center;
   transform-style: preserve-3d;
   perspective: 1000px;
-  transition: transform 1.0s;
-  height: auto;
-  width: auto;
-}
-
-.tile.flipped {
-  transform: rotateX(180deg);
-}
-
-.tile-front,
-.tile-back {
-  position: absolute;
-  backface-visibility: hidden;
-  display: flex;
-  flex-direction: column; /* Stack the elements vertically */
-  align-items: center;
-  justify-content: center; /* Distribute space between the elements */
+  transition: transform 1s;
   width: 100%;
   height: 100%;
-  padding: 10px;
-  word-wrap: break-word;
+  box-sizing: border-box;
 }
 
-.tile-back {
+.flip-content.flipped {
   transform: rotateX(180deg);
 }
 
-.tile .divider {
+.tile-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  min-height: 100px;
+}
+
+.tile-face.tile-back {
+  transform: rotateX(180deg);
+}
+
+.divider {
   width: 75%;               
   height: 2px;               
-  background-color: white;   
-  margin: 5px 0;             
+  background-color: var(--secondary);   
+  margin: 5px 0;
+  z-index: 1;             
 }
 
-.tile.clicked {
-    transform: scale(1.1); 
+.flip-content.correct {
+  background-color: #4caf50;
 }
 
-.selected {
-  background-color: #9d9c9c;
+
+
+
+.quote-popup{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0,0,0,0.8);
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+  font: 1.2em;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 2s ease-out;
 }
 
-.results {
-  margin-top: 20px;
-  font-size: 18px;
-  color: #000000;
+.guess-dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  margin-bottom: -5px;
 }
 
-.string-box {
-  border: 2px solid #333;   
-  padding: 10px;            
-  margin-top: 10px;         
-  display: block;           
-  width: 100%;              
-  word-wrap: break-word;    
-  background-color: #f9f9f9; 
+.dot {
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  border-radius: 50%;
+  background-color: #bbb;
+  transition: background-color 0.3s ease;
 }
 
-.matched {
-    color: rgb(255, 255, 255);  
-    font-weight: bold; 
+.dot.filled {
+  background-color: var(--secondary);
 }
 
-.mismatched {
-    color: red; 
-    font-weight: bold; 
+.button-container {
+  display: flex;
+  flex-direction: column;   /* stack buttons vertically */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .button {
-  /* Base button styling */
-  background-color: #333;          /* Dark base */
-  color: #fff;                     /* White text */
-  border: none;                    /* No border */
-  border-radius: 8px;              /* Rounded corners */
-  padding: 12px 20px;              /* Adequate padding */
-  margin: 10px;                    /* Spacing between buttons */
+  background-color: var(--primary);   /* Dark base */
+  color: var(--text-main);            /* Black text */
+  border: 2px solid var(--tile-border); /* Blue border */
+  border-radius: 8px;                 /* Rounded corners */
+  padding: 12px 20px;                 /* Adequate padding */
+  margin: 10px 0;                     /* Vertical spacing */
   font-family: "Courier New", Courier, monospace;
-  font-size: 16px;                 /* Comfortable size */
+  font-size: 16px;                    /* Comfortable size */
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  width: 75%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  user-select: none; /* Prevents text selection */
 }
 
 .button:hover {
-  /* Slight lightening on hover */
-  background-color: #555;
+  background-color: var(--secondary);
 }
 
 .button:active {
-  /* Scale down a bit when clicked */
   transform: scale(0.95);
 }
 
-.string-box.correct {
-  border: 4px solid limegreen;
+.results-screen {
+  background: var(--bg-accent);
+  background: #FFFFFF;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.string-box.incorrect {
-  border: 4px solid red;
+.completed-quotes p {
+  margin: 0.5rem 0;
+}
+
+.stats p {
+  margin: 0.25rem 0;
+  color: var(--text-main);
 }
