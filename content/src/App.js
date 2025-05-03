@@ -96,15 +96,28 @@ function App() {
     (async () => {
       try {
         const res = await fetch(API_URL + 'version');
-        const {version: newVersion} = await res.json();
-        const oldVersion = localStorage.getItem('quoteVersionSeed');
 
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.version) {
+          throw new Error("Response JSON missing 'version' field");
+        }
+
+        const newVersion = data.version.toString();
+
+        const oldVersion = localStorage.getItem('quoteVersionSeed');
         if (oldVersion && oldVersion !== newVersion) {
-          localStorage.clear();
+          // console.log("reset")
+          localStorage.removeItem('quotableUIState');
           localStorage.setItem('quoteVersionSeed', newVersion);
           fetchTiles();
         } else {
           // First run or same day
+          // console.log("no rest")
           localStorage.setItem('quoteVersionSeed', newVersion);
         }
       } catch (e) {
