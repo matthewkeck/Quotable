@@ -1,20 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { API_URL } from "./utils";
-import GridLayout from "react-grid-layout";
+import { Responsive, WidthProvider } from 'react-grid-layout';
 import "react-grid-layout/css/styles.css";
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
+
+const originalLayouts = getFromLS("layouts") || {};
+
+export default class ResponsiveLocalStorageLayout extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      layouts: JSON.parse(JSON.stringify(originalLayouts));
+    };
+  }
+
+  static get defaultProps() {
+    return {
+      className: "layout",
+      cols: {lg: 12, md: 10, sm: 6, xs: 4, xxs: 2},
+      rowHeight: 30
+    };
+  }
+
+  resetLayout() {
+    this.setState({layouts: {}});
+  }
+
+  onLayoutChange(layout, layous) {
+    saveToLS("layouts", layouts);
+    this.setState({ layouts })
+  }
+
+  render()
+}
+
+const breakpoints = { lg: 800, md: 500, sm: 0 };
+const cols       = { lg: 4, md: 3, sm: 2 };
 
 const MAX_GUESSES = 3;
 const LOCAL_STORAGE_KEY = 'quotableUIState';
 
 function App() {
   const isInitialLoad = useRef(true);
-  // responsive columns logic
-  const getCols = () => window.innerWidth <= 500 ? 2 : 3;
-  const [cols, setCols] = useState(3);
-
   // Layout state
-  const [layout, setLayout] = useState([]);
+  const [layouts, setLayouts] = useState({lg: [], md: [], sm: []});
  
   // Tiles and game state
   const [tiles, setTiles] = useState([]);
@@ -29,10 +60,16 @@ function App() {
   const [view, setView] = useState('game');
   const [stats, setStats] = useState({solvedIn1: 0, solvedIn2: 0, solvedIn3: 0, solvedCount:0, totalSessions: 0})
 
+  // Utility to turn a flat layout into all breakpoints
+  const makeLayouts = base =>({
+    lg: base,
+    md: base, 
+    sm: base
+  });
 
   const saveUIState = () => {
     try {
-      const state = {tiles, isGameOver, isCorrect, validationStatus, layout, topQuote, bottomQuote, showQuote, correctTileOrder, guessCount, view}
+      const state = {tiles, isGameOver, isCorrect, validationStatus, layouts, topQuote, bottomQuote, showQuote, correctTileOrder, guessCount, view}
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.error('Failed to save to localStorage', e);
@@ -54,7 +91,7 @@ function App() {
     setIsGameOver(saved.isGameOver || false);
     setIsCorrect(saved.isCorrect || false);
     setValidationStatus(saved.validationStatus || null);
-    setLayout(saved.layout || []);
+    setLayouts(saved.layout || {sm: [], md: [], lg: []});
     setTopQuote(saved.topQuote || "");
     setBottomQuote(saved.bottomQuote || "");
     setShowQuote(saved.showQuote || false);
@@ -65,24 +102,6 @@ function App() {
       fetchStats();
     }
   }
-
-  // Handle window resize to update cols
-  // useEffect(() => {
-  //   const onResize = () => {
-  //     setCols(getCols());
-  //   }
-  //   window.addEventListener('resize', onResize);
-  //   return () => window.removeEventListener('resize', onResize);
-  // }, []);
-
-  // Recreate layout when tiles or cols change
-  // useEffect(() => {
-  //   if (tiles.length) {
-  //     setLayout(createLayout(tiles.length, cols))
-  //   }
-  // }, [tiles.length, cols]);
-
-  
 
   useEffect(() => {
     const saved = loadUIState();
@@ -103,11 +122,11 @@ function App() {
 
         const data = await res.json();
 
-        if (!data.version) {
+        if (!data.server_date) {
           throw new Error("Response JSON missing 'version' field");
         }
 
-        const newVersion = data.version.toString();
+        const newVersion = data.server_date.toString();
 
         const oldVersion = localStorage.getItem('quoteVersionSeed');
         if (oldVersion && oldVersion !== newVersion) {
@@ -141,7 +160,7 @@ function App() {
       isGameOver, 
       isCorrect, 
       validationStatus, 
-      layout, 
+      layouts, 
       topQuote, 
       bottomQuote, 
       showQuote, 
@@ -179,8 +198,10 @@ function App() {
       if (data.tiles) {
         const initialTiles = data.tiles.map(t => ({...t, isFlipped: false}));
         setTiles(initialTiles);
-        const initialLayout = createLayout(initialTiles.length, cols);
-        setLayout(initialLayout)
+        const baseLayout = initialTiles.map((_, i) => ({
+          i: i.toString(), x: i % cols.lg, y: Math.floor(i / cols.lg), w: 1, h:1
+        }));
+        setLayouts(makeLayouts(baseLayout));
         setGuessCount(data.guessNumber || 0);
         setIsCorrect(data.solved || false);       
       } else {
@@ -276,13 +297,11 @@ function App() {
     }));
   };
 
-  const handleLayoutChange = (newLayout) => {
-    setLayout(newLayout);
-    // Sort the new layout to determin the order
-    const orderedLayout = [...newLayout].sort((a, b) => a.y - b.y || a.x - b.x);
-    const newOrder = orderedLayout.map(item => parseInt(item.i, 10));
-    setCorrectTileOrder(newOrder);
-    // saveStateToLocalStorage(tiles, newLayout);
+  const handleLayoutChange = (newLayout, allLayouts) => {
+    setLayouts(allLayouts);
+    // determine correctTileOrder from the current breakpoint layout
+    const current = newLayout.sort((a,b) => a.y - b.y || a.x - b.x);
+    setCorrectTileOrder(current.map(item => parseInt(item.i, 10)));   
   }
 
   const updateCurrentQuotes = () => {
@@ -330,33 +349,34 @@ function App() {
       <div className="game-container">
         <h1>Quotable</h1>
 
-        <div  style={{ margin: '0 auto', width: 600 }} >
-          <GridLayout
+        <div  style={{ margin: '0 auto', width: 600}} >
+          <ResponsiveGridLayout
             className="tiles"
-            layout={layout}
+            layouts={layouts}
+            breakpoints={breakpoints}
             cols={cols}
             rowHeight={100}
-            width={600}
-            compactType={"horizontal"}
+            compactType={'horizontal'}
             isResizable={false}
             isDraggable={!isGameOver}
-            margin={[30, 30]}
-            draggableCancel='.flip-button'
+            margin={[20, 20]}
+            draggableCancel=".hitbox-top, .hitbox-bottom"
             onLayoutChange={handleLayoutChange}
           >
             {tiles.map((tile, index) => (
               <div
                 key={index}
-                data-grid={layout.find(l => l.i === index.toString())}
                 className={"tile"}
               >
+                {/* Invisible drag hitboxes */}
                 <div
-                  className="flip-button" 
-                  onClick={(e) => flipTile(e, index)}
-
-                >
-                  🔄 
-                </div>
+                  className="hitbox-top"
+                  onClick={e => {flipTile(e, index); }}
+                />
+                <div
+                  className="hitbox-bottom"
+                  onClick={e => {flipTile(e, index); }}
+                />
 
                 <div className={`flip-content ${isGameOver && isCorrect ? "correct" : ""} ${tile.isFlipped ? 'flipped' : ""} `}>
                   <div className="tile-face tile-front">
@@ -372,14 +392,14 @@ function App() {
                   </div>
                 </div>
             ))}
-          </GridLayout>
+          </ResponsiveGridLayout>
         </div>
 
-        <div className='guess-dots'>
+        {/* <div className='guess-dots'>
           {[0, 1, 2].map(i => (
             <span key={i} className={`dot ${i < guessCount ? 'filled' : ''}`}></span>
           ))}
-        </div>
+        </div> */}
 
         <div className='button-container'>
           <button 
@@ -388,6 +408,16 @@ function App() {
             disabled={isGameOver}
           >
             {isCorrect ? "Solved" : "Check"}
+            {!isCorrect && (
+              <span className="dots">
+                {[0, 1, 2].map(i => (
+                  <span
+                    key={i}
+                    className={`dot ${i < guessCount ? 'filled' : ''}`}
+                  />
+                ))}
+              </span>
+            )}
           </button>
           <button 
             className="button" 
@@ -396,7 +426,7 @@ function App() {
               setShowQuote(!showQuote);
             }}
           >
-            {showQuote ? "Hide Selection" : "Show Selection"}
+            {showQuote ? "Hide Sentance" : "Show Sentance"}
           </button>
         </div>
         {showQuote && (
