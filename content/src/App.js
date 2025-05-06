@@ -167,6 +167,8 @@ function App() {
         setLayout(initialLayout)
         setGuessCount(data.guessNumber || 0);
         setIsCorrect(data.solved || false);
+        setIsGameOver(false)
+        setValidationStatus(null);
         setView('game');       
       } else {
         // stats only
