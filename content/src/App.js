@@ -66,24 +66,6 @@ function App() {
     }
   }
 
-  // Handle window resize to update cols
-  // useEffect(() => {
-  //   const onResize = () => {
-  //     setCols(getCols());
-  //   }
-  //   window.addEventListener('resize', onResize);
-  //   return () => window.removeEventListener('resize', onResize);
-  // }, []);
-
-  // Recreate layout when tiles or cols change
-  // useEffect(() => {
-  //   if (tiles.length) {
-  //     setLayout(createLayout(tiles.length, cols))
-  //   }
-  // }, [tiles.length, cols]);
-
-  
-
   useEffect(() => {
     const saved = loadUIState();
     if (saved) {
@@ -107,17 +89,19 @@ function App() {
           throw new Error("Response JSON missing 'version' field");
         }
 
-        const newVersion = data.version.toString();
 
+        const newVersion = data.version.toString();
+        
         const oldVersion = localStorage.getItem('quoteVersionSeed');
+        console.log(oldVersion, newVersion, oldVersion !== newVersion);
         if (oldVersion && oldVersion !== newVersion) {
-          // console.log("reset")
+          console.log("reset")
           localStorage.removeItem('quotableUIState');
           localStorage.setItem('quoteVersionSeed', newVersion);
           fetchTiles();
         } else {
           // First run or same day
-          // console.log("no rest")
+          console.log("no rest")
           localStorage.setItem('quoteVersionSeed', newVersion);
         }
       } catch (e) {
