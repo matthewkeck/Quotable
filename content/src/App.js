@@ -166,7 +166,8 @@ function App() {
         const initialLayout = createLayout(initialTiles.length, cols);
         setLayout(initialLayout)
         setGuessCount(data.guessNumber || 0);
-        setIsCorrect(data.solved || false);       
+        setIsCorrect(data.solved || false);
+        setView('game');       
       } else {
         // stats only
         setGuessCount(data.guessNumber || 0);
