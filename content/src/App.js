@@ -303,12 +303,12 @@ function App() {
 
         const data = await res.json();
 
-        if (!data.server_date) {
+        if (!data.version) {
           throw new Error("Response JSON missing 'version' field");
         }
 
 
-        const newVersion = data.server_date.toString();
+        const newVersion = data.version.toString();
         
         const oldVersion = localStorage.getItem('quoteVersionSeed');
         if (oldVersion && oldVersion !== newVersion) {
