@@ -71,6 +71,7 @@ function App() {
       console.error('Failed to load from localStorage', e);
       return null;
     }
+
   }, []);
 
   const getOrCreateSessionId = useCallback(() => {
@@ -81,6 +82,7 @@ function App() {
     }
     return sessionId;
   }, []);
+
 
   const createLayout = useCallback((tileCount, tiles = []) => {
     const layouts = {};
