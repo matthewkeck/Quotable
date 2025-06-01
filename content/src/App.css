@@ -1,22 +1,17 @@
 /* Updated App.css with stacked buttons, black text, blue borders, white game container */
 :root {
-  /* Page backgrounds */
-  --bg-light:    #E3F2FD;  /* light sky blue */
-  --bg-accent:   #FFEBEE;  /* pale rose */
-
-  /* Tiles */
-  --tile-bg:     #FFFFFF;  /* white */
-  --tile-border: #42A5F5;  /* vivid blue */
-
-  /* Buttons & accents */
-  --primary:     #1E88E5;  /* strong blue */
-  --secondary:   #D81B60;  /* magenta */
-  --highlight:   #43A047;  /* fresh green */
-
-  /* Text */
-  --text-main:   #000000;  /* black */
-  --text-light:  #FFFFFF;  /* white */
+  /* Dark‐mode ChatGPT‐inspired palette */
+  --bg-light:    #2E2E2E;    /* dark gray background */
+  --bg-accent:   #3A3A3A;    /* slightly lighter accent panels */
+  --tile-bg:     #4A4A4A;    /* light gray tiles */
+  --tile-border: #6b6b6b;    /* subtle tile borders */
+  --primary:     #4dfd94;    /* accent green (optional) */
+  --secondary:   #bd0000;    /* red accent */
+  --highlight:   #fde68a;    /* highlight color, if needed */
+  --text-main:   #FFFFFF;    /* white main text */
+  --text-light:  #FFFFFF;    /* white text for dark backgrounds */
 }
+
 
 .App {
   text-align: center;
@@ -25,99 +20,171 @@
 body {
   font-family: 'Courier New', Courier, monospace;
   display: flex;
+  background: var(--bg-light);
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  background-color: var(--bg-light);
   color: var(--text-main);
 }
 
+
+
+.game-container,
+.results-screen {
+  margin: 10px auto;
+  box-sizing: border-box;
+  margin-top: 80px;
+}
+
+.game-container {
+  width: 100vw;     /* 100% of the browser viewport’s width */
+  height: 100%;
+  max-width: 100%;  /* don’t overflow parent */
+  margin: 0 auto;
+  position: relative;
+  background: var(--bg-light);
+  color: var(--text-main);
+  /* overflow: hidden; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.main-content.shifted .game-container {
+  width: calc(100vw - 240px);
+}
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  background-color: var(--bg-light);
+  /* remove sticky positiong */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+
 h1 {
+
+  font-size: 2.8rem;
   text-align: center;
   color: var(--primary);
   margin: 1rem;
 }
 
-.game-container,
-.results-screen {
-  margin: 2rem auto;
-  box-sizing: border-box;
-  padding: 2rem;
-}
 
-.game-container {
-  position: relative;
-  background-color: #FFFFFF;  /* white */
-  color: var(--text-main);
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  /* overflow: hidden; */
+
+
+
+.button-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: fit-content;
+  flex-direction: row;   /* stack buttons vertically */
+
 }
 
-/* .tiles-wrapper {
+.button {
+  background: transparent;
+  border: none;
+  color: var(--text-main);            /* Black text */
+  width: 44px;
+  height: 44px;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2x, transform 0.2s;
+  user-select: none;
+
+}
+
+.button:hover {
+  background-color: var(--secondary);
+}
+
+.guess-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.guess-label {
+
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: var(--text-main);
+}
+
+.dots {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-} */
-
-/* Override react-grid-layout width */
-.tiles-wrapper .react-grid-layout {
-  width: 100% !important;
 }
 
-/* Responsive grid items: 3 columns default */
-.tiles-wrapper .react-grid-item {
-  width: calc((100% - 2 * 30px) / 3) !important; /* subtract margins */
-  margin: 15px !important;
+.dot {
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  transition: background-color 0.3s ease;
 }
 
-/* 2 columns on mid screens */
-@media (max-width: 500px) {
-  .tiles-wrapper .react-grid-item {
-    width: calc((100% - 30px) / 2) !important;
-  }
+
+.dot.filled {
+  background-color: var(--secondary);
 }
 
-/* 1 column on small screens */
-@media (max-width: 350px) {
-  .tiles-wrapper .react-grid-item {
-    width: 100% !important;
-    margin: 10px 0 !important;
-  }
+
+
+.button:active {
+  transform: scale(0.95);
+}
+
+
+.tiles {
+  margin-top: 120px;
 }
 
 .tile {
-  width: 75%;
+  perspective: 1000px !important;
   position: relative;
   user-select: none; /* Prevents text selection */
+  cursor: grab;
 }
 
 .flip-content.correct-order {
   background-color: gold;
 }
 
-.flip-button {
+/* Invisible hitboxes for drag-to-flip */
+.hitbox-top,
+.hitbox-bottom {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  width: 100%;
+  height: 10%;
+  left: 0;
+  z-index: 3;
   cursor: pointer;
-  z-index: 2;
-  color: var(--text-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: transparent;
+}
+
+.hitbox-top { top: 0; }
+.hitbox-bottom { top: 90%; }
+
+.flip-content, .tile-face {
+  word-break: break-word;
 }
 
 .flip-content {
-  font-size: 12px;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
   border: 2px solid var(--tile-border);
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -130,131 +197,85 @@ h1 {
   position: relative;
   text-align: center;
   transform-style: preserve-3d;
-  perspective: 1000px;
-  transition: transform 1s;
+  transition: transform 1s !important;
   width: 100%;
   height: 100%;
+
   box-sizing: border-box;
 }
 
 .flip-content.flipped {
-  transform: rotateX(180deg);
+  transform: rotateX(180deg) !important;
 }
 
 .tile-face {
   position: absolute;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
+  backface-visibility: hidden !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px;
   box-sizing: border-box;
-  word-wrap: break-word;
   min-height: 100px;
 }
 
 .tile-face.tile-back {
-  transform: rotateX(180deg);
+  transform: rotateX(180deg) !important;
 }
 
 .divider {
   width: 75%;               
   height: 2px;               
   background-color: var(--secondary);   
-  margin: 5px 0;
   z-index: 1;             
 }
 
 .flip-content.correct {
-  background-color: #4caf50;
+  
+  border-color: var(--primary);
+  color: var(--text-main);
 }
 
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 200; /* Ensure it appears above other content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-
-
-.quote-popup{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0,0,0,0.8);
-  color: white;
-  border-radius: 10px;
+.popup-content{
+  position: static;
+  max-height: 80vh;
+  overflow-y: auto;
   padding: 20px;
-  font: 1.2em;
+  top: auto;
+  left: auto;
+  transform: none;
+  color: white;
   text-align: center;
   opacity: 1;
   transition: opacity 2s ease-out;
 }
 
-.guess-dots {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-  margin-bottom: -5px;
+
+.popup-content ul {
+  list-style-position: inside;
+  text-align: center;
+  padding: 0;
+  margin: 0 auto;
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  margin: 0 5px;
-  border-radius: 50%;
-  background-color: #bbb;
-  transition: background-color 0.3s ease;
+.popup-content li {
+  margin: 10px;
 }
 
-.dot.filled {
-  background-color: var(--secondary);
-}
 
-.button-container {
-  display: flex;
-  flex-direction: column;   /* stack buttons vertically */
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
 
-.button {
-  background-color: var(--primary);   /* Dark base */
-  color: var(--text-main);            /* Black text */
-  border: 2px solid var(--tile-border); /* Blue border */
-  border-radius: 8px;                 /* Rounded corners */
-  padding: 12px 20px;                 /* Adequate padding */
-  margin: 10px 0;                     /* Vertical spacing */
-  font-family: "Courier New", Courier, monospace;
-  font-size: 16px;                    /* Comfortable size */
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  width: 75%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  user-select: none; /* Prevents text selection */
-}
 
-.button:hover {
-  background-color: var(--secondary);
-}
-
-.button:active {
-  transform: scale(0.95);
-}
-
-.results-screen {
-  background: var(--bg-accent);
-  background: #FFFFFF;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.completed-quotes p {
-  margin: 0.5rem 0;
-}
-
-.stats p {
-  margin: 0.25rem 0;
-  color: var(--text-main);
-}

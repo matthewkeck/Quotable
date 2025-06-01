@@ -231,7 +231,8 @@ def tiles_endpoint():
 
 @app.route('/version', methods=['GET'])
 def version():
-    return jsonify({"version": date_seed})
+    current_date = int(datetime.today().strftime("%Y%m%d"))
+    return jsonify({"server_date": current_date})
 
 @app.route('/validate', methods=['POST'])
 def validate():
