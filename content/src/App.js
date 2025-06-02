@@ -101,7 +101,7 @@ function App() {
         const numberOfTopLines = Math.ceil(topLength / 14);
         const numberOfBottomLines = Math.ceil(bottomLength / 14);
         const totalLines = numberOfTopLines + numberOfBottomLines;  
-        height += Math.ceil((totalLines - 5) / 7);
+        height += Math.ceil((totalLines - 4) / 7);
       }
 
       return {
